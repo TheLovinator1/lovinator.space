@@ -1,5 +1,11 @@
 {
     "cSpell.words": [
-        "lovinator"
+        "appauthor",
+        "appname",
+        "docstrings",
+        "dotenv",
+        "load_dotenv",
+        "lovinator",
+        "python-dotenv"
     ]
 }
