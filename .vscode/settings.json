@@ -6,6 +6,7 @@
         "dotenv",
         "load_dotenv",
         "lovinator",
+        "platformdirs",
         "python-dotenv"
     ]
 }

@@ -4,10 +4,19 @@ import os
 from pathlib import Path
 from typing import Any
 
+import sentry_sdk
 from dotenv import load_dotenv
 from platformdirs import user_data_dir
 
+sentry_sdk.init(
+    dsn="https://a1def3e5323ad037cfab2c82bcb6e94e@o4505228040339456.ingest.us.sentry.io/4508790769713152",
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+    _experiments={"continuous_profiling_auto_start": True},
+)
+
 load_dotenv(verbose=True)
+
 
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
 DATA_DIR: Path = Path(
@@ -18,6 +27,7 @@ DATA_DIR: Path = Path(
         ensure_exists=True,
     )
 )
+
 
 SECRET_KEY: str | None = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
