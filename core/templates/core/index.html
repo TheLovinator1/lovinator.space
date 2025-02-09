@@ -13,31 +13,37 @@
         <h1>GitHub Repository Status</h1>
     </header>
     <main>
-        <section>
-            <h2>Latest Commit</h2>
-            {% if latest_commit %}
-            <p><strong>Message:</strong> {{ latest_commit.message }}</p>
-            <p><strong>Time:</strong> {{ latest_commit.time }}</p>
-            {% else %}
-            <p>No commit data available.</p>
-            {% endif %}
-        </section>
-        <section>
-            <h2>Broken Workflows</h2>
-            {% if failed_workflows %}
-            <ul>
-                {% for workflow in failed_workflows %}
-                <li>
-                    <strong>{{ workflow.name }}</strong> -
-                    Status: {{ workflow.conclusion }} -
-                    Run ID: {{ workflow.id }}
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p>No broken workflows found.</p>
-            {% endif %}
-        </section>
+        <div class="repos-container">
+            {% for repo in repos %}
+            <div class="repo-card">
+                <h2>{{ repo.name }}</h2>
+                <div class="repo-section">
+                    <h3>Latest Commit</h3>
+                    {% if repo.latest_commit %}
+                    <p><strong>Message:</strong> {{ repo.latest_commit.message }}</p>
+                    <p><strong>Time:</strong> {{ repo.latest_commit.time }}</p>
+                    {% else %}
+                    <p>No commit data available.</p>
+                    {% endif %}
+                </div>
+                <div class="repo-section">
+                    <h3>Broken Workflows</h3>
+                    {% if repo.failed_workflows %}
+                    <ul>
+                        {% for workflow in repo.failed_workflows %}
+                        <li>
+                            <strong>{{ workflow.name }}</strong> - Status: {{ workflow.conclusion }} - Run ID:
+                            {{ workflow.id }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No broken workflows found.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </main>
 </body>
 
