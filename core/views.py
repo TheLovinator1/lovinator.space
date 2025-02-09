@@ -5,27 +5,27 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any
 
-import requests
 import sentry_sdk
 from django.shortcuts import render
+from requests_cache import CachedResponse, CachedSession, OriginalResponse
 
 if TYPE_CHECKING:
+    import requests
     from django.http import HttpRequest, HttpResponse
-
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
-    """Fetches GitHub data for a single repository concurrently.
+def github_request(url: str) -> dict[str, Any]:
+    """Helper function to make authenticated requests to GitHub API.
 
     Args:
-        repo_def (Dict[str, str]): Dictionary with owner and repo keys.
+        url (str): The GitHub API URL to request.
 
     Returns:
-        Dict[str, Any]: Repository data including name, latest commit, and workflows.
+        dict[str, Any]: JSON response from GitHub API, or an empty dict on failure.
     """
-    single_repo: dict[str, Any] = {"name": repo_def["repo"], "latest_commit": None, "failed_workflows": None}
+    session: requests.Session = CachedSession("github_cache", expire_after=300, cache_control=True)
     headers: dict[str, str] = {"Accept": "application/vnd.github.v3+json"}
 
     github_token: str | None = os.getenv("GITHUB_TOKEN")
@@ -33,30 +33,55 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
         headers["Authorization"] = f"token {github_token}"
 
     try:
-        commit_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/commits"
-        commit_resp: requests.Response = requests.get(commit_url, headers=headers, timeout=10)
-        commit_resp.raise_for_status()
-        commits = commit_resp.json()
-        if commits:
-            latest = commits[0]
-            single_repo["latest_commit"] = {
-                "message": latest.get("commit", {}).get("message", ""),
-                "time": latest.get("commit", {}).get("committer", {}).get("date", ""),
-            }
+        response: OriginalResponse | CachedResponse = session.get(url, headers=headers, timeout=10)  # pyright: ignore[reportUnknownMemberType]
+        response.raise_for_status()
+        return response.json()
     except Exception as e:
-        logger.exception("Error retrieving GitHub status for repo %s/%s", repo_def["owner"], repo_def["repo"])
+        logger.exception("Error retrieving data from GitHub: %s", url)
         sentry_sdk.capture_exception(e)
+        return {}
+
+
+def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
+    """Fetches GitHub data for a single repository concurrently.
+
+    Args:
+        repo_def (dict[str, str]): Dictionary with owner and repo keys.
+
+    Returns:
+        dict[str, Any]: Repository data including name, latest commit, and workflows.
+    """
+    single_repo: dict[str, Any] = {"name": repo_def["repo"], "latest_commit": None, "failed_workflows": None}
+
+    commit_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/commits"
+    commits_response: Any = github_request(commit_url)
+    if not commits_response or not isinstance(commits_response, list):
+        return single_repo
+
+    latest: Any = commits_response[0]
+    single_repo["latest_commit"] = {
+        "message": latest.get("commit", {}).get("message", ""),
+        "time": latest.get("commit", {}).get("committer", {}).get("date", ""),
+    }
+
+    status_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/actions/runs"
+    status_data: dict[str, Any] = github_request(status_url)
+    failed_workflows = [
+        workflow["name"] for workflow in status_data.get("workflow_runs", []) if workflow["conclusion"] == "failure"
+    ]
+    single_repo["failed_workflows"] = failed_workflows
+
     return single_repo
 
 
 def index(request: HttpRequest) -> HttpResponse:
-    """View to display GitHub repository statuses concurrently.
+    """View to display GitHub repository statuses concurrently and the current API rate limit.
 
     Args:
         request (HttpRequest): The HTTP request object.
 
     Returns:
-        HttpResponse: Rendered HTML with GitHub repository information.
+        HttpResponse: Rendered HTML with GitHub repository information and API rate limit.
     """
     repo_list: list[dict[str, str]] = [
         {"owner": "TheLovinator1", "repo": "ANewDawn"},
@@ -90,4 +115,8 @@ def index(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         logger.exception("Error processing GitHub repositories concurrently")
         sentry_sdk.capture_exception(e)
+
+    # Sort repositories by name
+    context_repos.sort(key=lambda x: x["name"].lower())
+
     return render(request, "core/index.html", {"repos": context_repos})

@@ -7,9 +7,13 @@
         "load_dotenv",
         "lovinator",
         "nostatic",
+        "panso",
         "platformdirs",
+        "pycache",
         "python-dotenv",
         "pyupgrade",
+        "staticfiles",
+        "Sunbreeze",
         "whitenoise"
     ]
 }

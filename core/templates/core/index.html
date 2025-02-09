@@ -27,8 +27,8 @@
                     {% endif %}
                 </div>
                 <div class="repo-section">
-                    <h3>Broken Workflows</h3>
                     {% if repo.failed_workflows %}
+                    <h3>Broken Workflows</h3>
                     <ul>
                         {% for workflow in repo.failed_workflows %}
                         <li>
@@ -37,8 +37,6 @@
                         </li>
                         {% endfor %}
                     </ul>
-                    {% else %}
-                    <p>No broken workflows found.</p>
                     {% endif %}
                 </div>
             </div>

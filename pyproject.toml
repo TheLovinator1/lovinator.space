@@ -9,6 +9,7 @@ dependencies = [
     "platformdirs",
     "python-dotenv",
     "requests",
+    "requests-cache",
     "sentry-sdk[django]",
     "whitenoise[brotli]",
 ]
