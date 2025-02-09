@@ -1,22 +1,29 @@
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
 
-import sentry_sdk
 from dotenv import load_dotenv
 from platformdirs import user_data_dir
 
-sentry_sdk.init(
-    dsn="https://a1def3e5323ad037cfab2c82bcb6e94e@o4505228040339456.ingest.us.sentry.io/4508790769713152",
-    send_default_pii=True,
-    traces_sample_rate=1.0,
-    _experiments={"continuous_profiling_auto_start": True},
-)
+logger: logging.Logger = logging.getLogger(__name__)
 
 load_dotenv(verbose=True)
+DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 
+if not DEBUG:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn="https://a1def3e5323ad037cfab2c82bcb6e94e@o4505228040339456.ingest.us.sentry.io/4508790769713152",
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+        _experiments={"continuous_profiling_auto_start": True},
+    )
+else:
+    logger.debug("Debug mode is enabled. Sentry SDK will not be initialized.")
 
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
 DATA_DIR: Path = Path(
@@ -34,7 +41,7 @@ if not SECRET_KEY:
     msg = "DJANGO_SECRET_KEY environment variable is not set."
     raise ValueError(msg)
 
-DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+
 WSGI_APPLICATION: str = "config.wsgi.application"
 ALLOWED_HOSTS: list[str] = [] if DEBUG else [".lovinator.space"]
 INTERNAL_IPS: list[str] = ["127.0.0.1", "::1"]
@@ -49,10 +56,7 @@ USE_I18N: bool = False
 
 STATIC_URL: str = "static/"
 STATIC_ROOT: Path = BASE_DIR / "staticfiles"
-STATICFILES_DIRS: list[Path] = [BASE_DIR / "static"]
-
-MEDIA_URL: str = "media/"
-MEDIA_ROOT: Path = BASE_DIR / "media"
+STATIC_ROOT.mkdir(parents=True, exist_ok=True)
 
 ADMINS: list[tuple[str, str]] = [("Joakim Hellsén", "tlovinator@gmail.com")]
 
@@ -72,15 +76,11 @@ EMAIL_TIMEOUT: int = 10
 DEFAULT_FROM_EMAIL: str = os.getenv("EMAIL_HOST_USER", "webmaster@localhost")
 SERVER_EMAIL: str = os.getenv("EMAIL_HOST_USER", "webmaster@localhost")
 
-# Create directories if they don't exist
-dirs_to_create: list[Path] = [STATIC_ROOT, *STATICFILES_DIRS, MEDIA_ROOT]
-for dir_path in dirs_to_create:
-    dir_path.mkdir(parents=True, exist_ok=True)
-
 
 INSTALLED_APPS: list[str] = [
     # Django apps
     "django.contrib.contenttypes",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.humanize",
@@ -88,7 +88,7 @@ INSTALLED_APPS: list[str] = [
     "core.apps.CoreConfig",
 ]
 
-MIDDLEWARE: list[str] = ["django.middleware.common.CommonMiddleware"]
+MIDDLEWARE: list[str] = ["django.middleware.common.CommonMiddleware", "whitenoise.middleware.WhiteNoiseMiddleware"]
 
 
 TEMPLATES: list[dict[str, str | bool | dict[str, list[str]] | list[str]]] = [
@@ -109,7 +109,7 @@ TEMPLATES: list[dict[str, str | bool | dict[str, list[str]] | list[str]]] = [
 DATABASES: dict[str, dict[str, Any]] = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "lovinator_space.sqlite3",
+        "NAME": DATA_DIR / "lovinator_space.sqlite3",
         "OPTIONS": {
             "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
         },
@@ -134,5 +134,17 @@ LOGGING: dict[str, Any] = {
         "asyncio": {  # Hide "Using selector: SelectSelector" spam
             "level": "WARNING",
         },
+    },
+}
+
+STORAGES = {
+    "default": {
+        "ENGINE": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": DATA_DIR / "media",
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }

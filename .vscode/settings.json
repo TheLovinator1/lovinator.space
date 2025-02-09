@@ -6,8 +6,10 @@
         "dotenv",
         "load_dotenv",
         "lovinator",
+        "nostatic",
         "platformdirs",
         "python-dotenv",
-        "pyupgrade"
+        "pyupgrade",
+        "whitenoise"
     ]
 }
