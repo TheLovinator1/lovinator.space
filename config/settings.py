@@ -25,7 +25,7 @@ DATA_DIR: Path = Path(
         appauthor="TheLovinator",
         roaming=True,
         ensure_exists=True,
-    )
+    ),
 )
 
 
@@ -113,7 +113,7 @@ DATABASES: dict[str, dict[str, Any]] = {
         "OPTIONS": {
             "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
         },
-    }
+    },
 }
 
 LOGGING: dict[str, Any] = {
