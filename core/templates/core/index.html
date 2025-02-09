@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,31 +5,99 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>lovinator.space</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'core/styles.css' %}">
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        a {
+            color: #ff0;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            border: 2px solid #0f0;
+            padding: 10px;
+            background-color: #222;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .repo {
+            border-bottom: 1px dashed #0f0;
+            padding: 10px;
+        }
+
+        .failed-workflows {
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        .blink {
+            color: red;
+            font-weight: bold;
+            animation: blink 1s steps(2, start) infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <main>
-        {% for repo in repos %}
-        <h2>{{ repo.name }}</h2>{{repo.failed_workflows|length}} failed workflows<br>
-        {% if repo.latest_commit %}
-        {{ repo.latest_commit.message }} - {{ repo.latest_commit.time|timesince }} ago <br>
-        {% else %}
-        <p class="card-text">No commit data available.</p>
-        {% endif %}
+    <h1 class="blink">Welcome to lovinator.space!</h1>
 
-        <h3>Failed workflows:</h3>
-        {% for workflow in repo.failed_workflows %}
-        <li class="list-group-item bg-secondary text-light">
-            <a href="{{ workflow.html_url }}" target="_blank" rel="noopener" class="card-link text-info">
-                <strong>{{ workflow.name }} ({{ workflow.head_branch }})</strong>
-            </a>
-            <br>
-            Last run: {{ workflow.created_at|timesince }} ago<br>
-        </li>
+    <div class="container">
+        {% for repo in repos %}
+        <div class="repo">
+            <h2>
+                <font color="red">{{ repo.name }}</font>
+            </h2>
+            <p><b>{{ repo.failed_workflows|length }}</b> failed workflows</p>
+
+            {% if repo.latest_commit %}
+            <p><i>{{ repo.latest_commit.message }}</i> - <font color="yellow">{{ repo.latest_commit.time|timesince }}
+                </font> ago</p>
+            {% else %}
+            <p>No commit data available.</p>
+            {% endif %}
+
+            <h3>Failed workflows:</h3>
+            <ul>
+                {% for workflow in repo.failed_workflows %}
+                <li class="failed-workflows">
+                    <a href="{{ workflow.html_url }}" target="_blank">
+                        <b>{{ workflow.name }} ({{ workflow.head_branch }})</b>
+                    </a>
+                    <br>Last run: <font color="cyan">{{ workflow.created_at|timesince }}</font> ago
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
         {% endfor %}
-        {% endfor %}
-    </main>
+    </div>
+
+    <hr>
+    <p>
+        <font size="2">© 2004 lovinator.space. Best viewed in Internet Explorer 6 at 1024x768 resolution.</font>
+    </p>
 </body>
 
 </html>
