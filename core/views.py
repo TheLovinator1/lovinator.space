@@ -25,7 +25,7 @@ def github_request(url: str) -> dict[str, Any]:
     Returns:
         dict[str, Any]: JSON response from GitHub API, or an empty dict on failure.
     """
-    session: requests.Session = CachedSession("github_cache", expire_after=300, cache_control=True)
+    session: requests.Session = CachedSession("github_cache", expire_after=300)
     headers: dict[str, str] = {"Accept": "application/vnd.github.v3+json"}
 
     github_token: str | None = os.getenv("GITHUB_TOKEN")
@@ -66,10 +66,22 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
 
     status_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/actions/runs"
     status_data: dict[str, Any] = github_request(status_url)
-    failed_workflows = [
-        workflow["name"] for workflow in status_data.get("workflow_runs", []) if workflow["conclusion"] == "failure"
+
+    workflows = [
+        {
+            "id": workflow["id"],
+            "name": workflow["name"],
+            "conclusion": workflow["conclusion"],
+            "html_url": workflow["html_url"],
+            "created_at": workflow["created_at"],
+            "updated_at": workflow["updated_at"],
+            "head_branch": workflow["head_branch"],
+        }
+        for workflow in status_data.get("workflow_runs", [])
+        if workflow["conclusion"] in {"failure", "timed_out", "cancelled", "action_required"}
     ]
-    single_repo["failed_workflows"] = failed_workflows
+
+    single_repo["failed_workflows"] = workflows or None
 
     return single_repo
 
