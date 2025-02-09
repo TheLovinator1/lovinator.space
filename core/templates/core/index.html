@@ -10,16 +10,34 @@
 
 <body class="dark-mode">
     <header>
-        <h1>Welcome to lovinator.space!</h1>
+        <h1>GitHub Repository Status</h1>
     </header>
     <main>
-        <p>Enjoy our dark mode styled site.</p>
-        <p>Check out our features below:</p>
-        <ul>
-            <li>Feature 1</li>
-            <li>Feature 2</li>
-            <li>Feature 3</li>
-        </ul>
+        <section>
+            <h2>Latest Commit</h2>
+            {% if latest_commit %}
+            <p><strong>Message:</strong> {{ latest_commit.message }}</p>
+            <p><strong>Time:</strong> {{ latest_commit.time }}</p>
+            {% else %}
+            <p>No commit data available.</p>
+            {% endif %}
+        </section>
+        <section>
+            <h2>Broken Workflows</h2>
+            {% if failed_workflows %}
+            <ul>
+                {% for workflow in failed_workflows %}
+                <li>
+                    <strong>{{ workflow.name }}</strong> -
+                    Status: {{ workflow.conclusion }} -
+                    Run ID: {{ workflow.id }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No broken workflows found.</p>
+            {% endif %}
+        </section>
     </main>
 </body>
 

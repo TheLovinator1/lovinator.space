@@ -8,9 +8,13 @@ dependencies = [
     "django",
     "platformdirs",
     "python-dotenv",
+    "requests",
     "sentry-sdk[django]",
     "whitenoise[brotli]",
 ]
+
+[dependency-groups]
+dev = ["pytest", "pytest-django"]
 
 [tool.ruff]
 preview = true
@@ -50,9 +54,6 @@ lint.ignore = [
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20
-
-[dependency-groups]
-dev = ["pytest-django"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/test_*.py" = [

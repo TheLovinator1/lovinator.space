@@ -35,3 +35,17 @@ When logging exceptions via logging.exception, the exception object is logged au
 Remember to add tests for all code examples. Assume that the reader has a testing environment set up with pytest and pytest-django. Don't add Sentry capture_exception calls in test code.
 
 Site name is lovinator.space. It is the personal site for TheLovinator.
+
+Use type annotation for all Python code examples. Ensure to include type hints for function arguments and return values.
+
+When testing for membership in a static sequence, prefer a set literal over a list or tuple, as Python optimizes set membership tests.
+
+Public functions should be documented via docstrings to outline their purpose and behavior.
+
+A function docstring should describe the function's behavior, arguments, side effects, exceptions, return values, and any other information that may be relevant to the user. Ensure to follow Google style docstrings and use type hints extensively in our codebase.
+
+Multi-line docstring summary should start at the first line.
+
+Docstrings that doesn't return anything should not have a return section.
+
+When using assert, ensure to include a helpful message to assist in debugging. Use f-strings for easier readability and to format error messages dynamically.
