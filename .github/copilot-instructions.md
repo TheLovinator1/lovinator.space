@@ -29,3 +29,7 @@ Our project structure uses `config` as the base Django app, which contains setti
 Docker Compose is used for managing services. Prefer Docker Compose configurations when explaining deployment and environment setup.
 
 For version control, assume we use Git with GitHub, and provide examples using Git best practices.
+
+When logging exceptions via logging.exception, the exception object is logged automatically. Including the exception object in the log message is redundant and can lead to excessive logging.
+
+Remember to add tests for all code examples. Assume that the reader has a testing environment set up with pytest and pytest-django. Don't add Sentry capture_exception calls in test code.

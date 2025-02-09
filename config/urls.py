@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from django.urls.resolvers import URLResolver
+from django.urls import path
 
-urlpatterns: list[URLResolver] = []
+from core.views import index
+
+if TYPE_CHECKING:
+    from django.urls.resolvers import URLPattern
+
+urlpatterns: list[URLPattern] = [
+    path("", index, name="index"),
+]
