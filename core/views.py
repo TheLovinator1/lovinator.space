@@ -4,18 +4,19 @@ import logging
 
 import sentry_sdk
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render  # new import
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def index(request: HttpRequest) -> HttpResponse:  # noqa: ARG001
+def index(request: HttpRequest) -> HttpResponse:
     """Index view.
 
     Returns:
-        HttpResponse: A simple welcome response.
+        HttpResponse: Rendered HTML response.
     """
     try:
-        return HttpResponse("Welcome to lovinator-space!")
+        return render(request, "core/index.html")
     except Exception as e:
         logger.exception("Error in index view.")
         sentry_sdk.capture_exception(e)

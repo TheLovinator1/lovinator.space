@@ -33,3 +33,5 @@ For version control, assume we use Git with GitHub, and provide examples using G
 When logging exceptions via logging.exception, the exception object is logged automatically. Including the exception object in the log message is redundant and can lead to excessive logging.
 
 Remember to add tests for all code examples. Assume that the reader has a testing environment set up with pytest and pytest-django. Don't add Sentry capture_exception calls in test code.
+
+Site name is lovinator.space. It is the personal site for TheLovinator.
