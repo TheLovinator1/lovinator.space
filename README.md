@@ -1,2 +1,3 @@
-# devhelp
-Dashboard for all my repos and projects
+# lovinator.space
+
+This is the source code for my personal website, [lovinator.space](https://lovinator.space).
