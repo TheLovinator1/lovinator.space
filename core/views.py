@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
+import os
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -10,6 +11,7 @@ from django.shortcuts import render
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -25,6 +27,11 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
     """
     single_repo: dict[str, Any] = {"name": repo_def["repo"], "latest_commit": None, "failed_workflows": None}
     headers: dict[str, str] = {"Accept": "application/vnd.github.v3+json"}
+
+    github_token: str | None = os.getenv("GITHUB_TOKEN")
+    if github_token:
+        headers["Authorization"] = f"token {github_token}"
+
     try:
         commit_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/commits"
         commit_resp: requests.Response = requests.get(commit_url, headers=headers, timeout=10)
