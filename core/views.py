@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 import os
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
@@ -12,6 +13,7 @@ from requests_cache import CachedResponse, CachedSession, OriginalResponse
 if TYPE_CHECKING:
     import requests
     from django.http import HttpRequest, HttpResponse
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -61,7 +63,11 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
     latest: Any = commits_response[0]
     single_repo["latest_commit"] = {
         "message": latest.get("commit", {}).get("message", ""),
-        "time": latest.get("commit", {}).get("committer", {}).get("date", ""),
+        "time": datetime.fromisoformat(
+            latest.get("commit", {}).get("committer", {}).get("date", "").replace("Z", "+00:00"),
+        )
+        if latest.get("commit", {}).get("committer", {}).get("date")
+        else None,
     }
 
     status_url: str = f"https://api.github.com/repos/{repo_def['owner']}/{repo_def['repo']}/actions/runs"
@@ -71,10 +77,8 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
         {
             "id": workflow["id"],
             "name": workflow["name"],
-            "conclusion": workflow["conclusion"],
             "html_url": workflow["html_url"],
-            "created_at": workflow["created_at"],
-            "updated_at": workflow["updated_at"],
+            "created_at": datetime.fromisoformat(workflow["created_at"].replace("Z", "+00:00")),
             "head_branch": workflow["head_branch"],
         }
         for workflow in status_data.get("workflow_runs", [])

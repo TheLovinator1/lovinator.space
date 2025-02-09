@@ -3,52 +3,33 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>lovinator.space</title>
     <link rel="stylesheet" type="text/css" href="{% static 'core/styles.css' %}">
 </head>
 
-<body class="dark-mode">
-    <header>
-        <h1>GitHub Repository Status</h1>
-    </header>
+<body>
     <main>
-        <div class="repos-container">
-            {% for repo in repos %}
-            <div class="repo-card">
-                <h2>{{ repo.name }}</h2>
-                <div class="repo-section">
-                    <h3>Latest Commit</h3>
-                    {% if repo.latest_commit %}
-                    <p><strong>Message:</strong> {{ repo.latest_commit.message }}</p>
-                    <p><strong>Time:</strong> {{ repo.latest_commit.time }}</p>
-                    {% else %}
-                    <p>No commit data available.</p>
-                    {% endif %}
-                </div>
-                <div class="repo-section">
-                    {% if repo.failed_workflows %}
-                    <h3>Broken Workflows</h3>
-                    <ul>
-                        {% for workflow in repo.failed_workflows %}
-                        <li class="workflow-item"></li>
-                        <a href="{{ workflow.html_url }}" target="_blank" rel="noopener">
-                            <strong>{{ workflow.name }}</strong>
-                        </a>
-                        <div class="workflow-details">
-                            <p>Status: {{ workflow.conclusion }}</p>
-                            <p>Branch: {{ workflow.head_branch }}</p>
-                            <p>Created: {{ workflow.created_at }}</p>
-                            <p>Updated: {{ workflow.updated_at }}</p>
-                        </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+        {% for repo in repos %}
+        <h2>{{ repo.name }}</h2>{{repo.failed_workflows|length}} failed workflows<br>
+        {% if repo.latest_commit %}
+        {{ repo.latest_commit.message }} - {{ repo.latest_commit.time|timesince }} ago <br>
+        {% else %}
+        <p class="card-text">No commit data available.</p>
+        {% endif %}
+
+        <h3>Failed workflows:</h3>
+        {% for workflow in repo.failed_workflows %}
+        <li class="list-group-item bg-secondary text-light">
+            <a href="{{ workflow.html_url }}" target="_blank" rel="noopener" class="card-link text-info">
+                <strong>{{ workflow.name }} ({{ workflow.head_branch }})</strong>
+            </a>
+            <br>
+            Last run: {{ workflow.created_at|timesince }} ago<br>
+        </li>
+        {% endfor %}
+        {% endfor %}
     </main>
 </body>
 
