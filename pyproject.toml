@@ -51,6 +51,9 @@ lint.ignore = [
 docstring-code-format = true
 docstring-code-line-length = 20
 
+[dependency-groups]
+dev = ["pytest-django"]
+
 [tool.ruff.lint.per-file-ignores]
 "**/*_test.py" = [
     "ARG",     # Unused function args -> fixtures nevertheless are functionally relevant...
