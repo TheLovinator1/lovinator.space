@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 import os
+import random
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
@@ -90,6 +91,16 @@ def fetch_repo_data(repo_def: dict[str, str]) -> dict[str, Any]:
     return single_repo
 
 
+def random_color() -> str:
+    """Returns a random hex color."""
+    try:
+        return "#" + "".join(random.choices("0123456789ABCDEF", k=6))  # noqa: S311
+    except Exception:
+        logger.exception("Failed to generate random color")
+        sentry_sdk.capture_exception()
+        return "#000000"
+
+
 def index(request: HttpRequest) -> HttpResponse:
     """View to display GitHub repository statuses concurrently and the current API rate limit.
 
@@ -135,4 +146,19 @@ def index(request: HttpRequest) -> HttpResponse:
     # Sort repositories by name
     context_repos.sort(key=lambda x: x["name"].lower())
 
-    return render(request, "core/index.html", {"repos": context_repos})
+    context = {
+        "repos": context_repos,
+        "color_bg": random_color(),
+        "color_text": random_color(),
+        "color_link": random_color(),
+        "color_border": random_color(),
+        "color_repo_name": random_color(),
+        "color_commit_message": random_color(),
+        "color_commit_time": random_color(),
+        "repo_border_bottom": random_color(),
+        "blink_color": random_color(),
+    }
+
+    logger.debug("Color context for rendering: %s", context)
+
+    return render(request, "core/index.html", context)
